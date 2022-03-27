@@ -1,0 +1,12 @@
+Rules
+
+1.coding
+2.update command.
+cscript vbac.wsf combine
+3.debug. test.
+4.commit
+
+option
+import command.
+cscript vbac.wsf decombine
+
