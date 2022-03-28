@@ -42,7 +42,7 @@ Sub CreateMonthSheet()
     End If
     
     ' Export Template.
-    Call CreateTemplateMonth(MonthSheet, month)
+    Call CreateTemplateMonth(MonthSheet, macro, month)
     
 End Sub
 
@@ -72,7 +72,7 @@ Function ChangeSheetMonth(isName As Boolean, SheetName() As String, ByVal month 
     ChangeSheetMonth = isName
 End Function
 
-Function CreateTemplateMonth(MonthSheet As Worksheet, ByVal month As String)
+Function CreateTemplateMonth(MonthSheet As Worksheet,macro As Worksheet, ByVal month As String)
     ' Initialize
     MonthSheet.Cells.Clear
     MonthSheet.Range("A1").Value = month
@@ -104,10 +104,55 @@ Function CreateTemplateMonth(MonthSheet As Worksheet, ByVal month As String)
     MonthSheet.Range("F3").Value = "休：休日"
     MonthSheet.Range("F4").Value = "半：半休"
 
+    ' Position
+    ' マクロシートの特定のセルから値を取得する
+    Dim positions() As String
+    positions() = GetBelongs(positions(), macro, "E")
+    Call SetBelongs(positions(), MonthSheet, "A")
+    MonthSheet.Range("A8").Value = "役職"
+    MonthSheet.Range("A9").Value = "施設長"
+    MonthSheet.Range("A10").Value = "社員"
+    MonthSheet.Range("A11").Value = "社員"
+    MonthSheet.Range("A12").Value = "契約社員"
+    MonthSheet.Range("A13").Value = "パート"
+
+    ' Member
+    Dim members() As String
+    members() = GetBelongs(members(), macro, "F")
+    Call SetBelongs(members(), MonthSheet, "B")
+    MonthSheet.Range("B8").Value = "名前"
+    MonthSheet.Range("B9").Value = "部長薫子"
+    MonthSheet.Range("B10").Value = "社員太郎"
+    MonthSheet.Range("B11").Value = "社員心太"
+    MonthSheet.Range("B12").Value = "契約花子"
+    MonthSheet.Range("B13").Value = "仁科仁部"
+
+    ' Work
+    MonthSheet.Range("C8").Value = "担当"
+
     ' Day
     ' Dim days(15) As Integet
     ' day() = GetDays(days, targetTerm)
     ' GetDays()
+
+    ' UI
+    ' TODO: A8-最終入力セルを取得して罫線を設定する
+    MonthSheet.Range("A8:B13").Borders.LineStyle = xlContinuous
+
+End Function
+
+Function GetBelongs(collections() As String , macro As Worksheet, col As String) As String()
+    ' macroシートのRow6以下の値が空白までループ
+    ' 空白までの数をカウント
+    ' collectionsの要素数をカウントにReDim
+    ' collectionsに役職の値を設定する
+
+    GetPosition = collections
+End Function
+
+Function SetBelongs(collections() As String , MonthSheet As Worksheet, col As String)
+    ' MonthSheetに値を設定する
+    Exit Function
 End Function
 
 Function GetDays(days() As Integer, ByVal targetTerm As String) As Integer()
