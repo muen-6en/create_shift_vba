@@ -1,4 +1,5 @@
 Attribute VB_Name = "Module1"
+' シートを作成する
 Sub CreateMonthSheet()
     Application.DisplayAlerts = False
     
@@ -8,12 +9,12 @@ Sub CreateMonthSheet()
     
     'Get Value.
     Dim month As String
-    Dim macro As Worksheet
-    Set macro = Worksheets("マクロ")
+    Dim settingSheet As Worksheet
+    Set settingSheet = Worksheets("マクロ")
     Dim targetMonth As String
     Dim targetTerm As String
-    targetMonth = macro.Range("F2").Value
-    targetTerm = macro.Range("F3").Value
+    targetMonth = settingSheet.Range("F3").Value
+    targetTerm = settingSheet.Range("F4").Value
 
     If targetMonth = "" Then
         MsgBox "月を選択してください", vbOKOnly + vbCritical
@@ -29,23 +30,24 @@ Sub CreateMonthSheet()
     
     'Create new Sheet.
     Worksheets().Add After:=Worksheets(Worksheets.Count)
-    Dim MonthSheet As Worksheet
-    Set MonthSheet = ActiveSheet
+    Dim exportSheet As Worksheet
+    Set exportSheet = ActiveSheet
     
     Dim SheetName() As String
     SheetName() = GetSheetName(SheetName, wb)
 
     Dim isName As Boolean
-    isName = ChangeSheetMonth(isName, SheetName, month, MonthSheet)
+    isName = ChangeSheetMonth(isName, SheetName, month, exportSheet)
     If isName Then
         Exit Sub
     End If
     
     ' Export Template.
-    Call CreateTemplateMonth(MonthSheet, macro, month)
+    Call CreateTemplateMonth(exportSheet, settingSheet, month)
     
 End Sub
 
+' シート名を取得する
 Function GetSheetName(SheetName() As String, ByVal wb As Workbook) As String()
     Dim SheetCnt As Long
     SheetCnt = wb.Sheets.Count
@@ -57,7 +59,8 @@ Function GetSheetName(SheetName() As String, ByVal wb As Workbook) As String()
     GetSheetName = SheetName
 End Function
 
-Function ChangeSheetMonth(isName As Boolean, SheetName() As String, ByVal month As String, MonthSheet As Worksheet) As Boolean
+' シート名を変更する
+Function ChangeSheetMonth(isName As Boolean, SheetName() As String, ByVal month As String, exportSheet As Worksheet) As Boolean
     isName = False
     For Each Name In SheetName()
         If Name = month Then
@@ -65,108 +68,168 @@ Function ChangeSheetMonth(isName As Boolean, SheetName() As String, ByVal month 
         End If
     Next Name
     If isName Then
-        MonthSheet.Delete
+        exportSheet.Delete
     Else
-        MonthSheet.Name = month
+        exportSheet.Name = month
     End If
     ChangeSheetMonth = isName
 End Function
 
-Function CreateTemplateMonth(MonthSheet As Worksheet,macro As Worksheet, ByVal month As String)
+Function CreateTemplateMonth(exportSheet As Worksheet, settingSheet As Worksheet, ByVal month As String)
     ' Initialize
-    MonthSheet.Cells.Clear
-    MonthSheet.Range("A1").Value = month
-    MonthSheet.Range("A1").Font.Size = 14
+    exportSheet.Cells.Clear
+    exportSheet.Range("A1").Value = month
+    exportSheet.Range("A1").Font.Size = 14
 
     ' Class
-    MonthSheet.Range("C2").Value = "勤務区分"
-    MonthSheet.Range("C3").Value = "A"
-    MonthSheet.Range("C4").Value = "B"
-    MonthSheet.Range("C5").Value = "C"
-    MonthSheet.Range("C6").Value = "D"
+    exportSheet.Range("C2").Value = "勤務区分"
+    exportSheet.Range("C3").Value = "A"
+    exportSheet.Range("C4").Value = "B"
+    exportSheet.Range("C5").Value = "C"
+    exportSheet.Range("C6").Value = "D"
 
     ' Start
-    MonthSheet.Range("D2").Value = "始業"
-    MonthSheet.Range("D3").Value = "7:00"
-    MonthSheet.Range("D4").Value = "9:00"
-    MonthSheet.Range("D5").Value = "12:00"
-    MonthSheet.Range("D6").Value = "14:00"
+    exportSheet.Range("D2").Value = "始業"
+    exportSheet.Range("D3").Value = "7:00"
+    exportSheet.Range("D4").Value = "9:00"
+    exportSheet.Range("D5").Value = "12:00"
+    exportSheet.Range("D6").Value = "14:00"
 
     ' End
-    MonthSheet.Range("E2").Value = "終業"
-    MonthSheet.Range("E3").Value = "16:00"
-    MonthSheet.Range("E4").Value = "18:00"
-    MonthSheet.Range("E5").Value = "21:00"
-    MonthSheet.Range("E6").Value = "23:00"
+    exportSheet.Range("E2").Value = "終業"
+    exportSheet.Range("E3").Value = "16:00"
+    exportSheet.Range("E4").Value = "18:00"
+    exportSheet.Range("E5").Value = "21:00"
+    exportSheet.Range("E6").Value = "23:00"
 
     ' other
-    MonthSheet.Range("F2").Value = "その他"
-    MonthSheet.Range("F3").Value = "休：休日"
-    MonthSheet.Range("F4").Value = "半：半休"
-
-    ' Position
-    ' マクロシートの特定のセルから値を取得する
-    Dim positions() As String
-    positions() = GetBelongs(positions(), macro, "E")
-    Call SetBelongs(positions(), MonthSheet, "A")
-    MonthSheet.Range("A8").Value = "役職"
-    MonthSheet.Range("A9").Value = "施設長"
-    MonthSheet.Range("A10").Value = "社員"
-    MonthSheet.Range("A11").Value = "社員"
-    MonthSheet.Range("A12").Value = "契約社員"
-    MonthSheet.Range("A13").Value = "パート"
-
-    ' Member
-    Dim members() As String
-    members() = GetBelongs(members(), macro, "F")
-    Call SetBelongs(members(), MonthSheet, "B")
-    MonthSheet.Range("B8").Value = "名前"
-    MonthSheet.Range("B9").Value = "部長薫子"
-    MonthSheet.Range("B10").Value = "社員太郎"
-    MonthSheet.Range("B11").Value = "社員心太"
-    MonthSheet.Range("B12").Value = "契約花子"
-    MonthSheet.Range("B13").Value = "仁科仁部"
-
-    ' Work
-    MonthSheet.Range("C8").Value = "担当"
+    exportSheet.Range("F2").Value = "その他"
+    exportSheet.Range("F3").Value = "休：休日"
+    exportSheet.Range("F4").Value = "半：半休"
 
     ' Day
-    ' Dim days(15) As Integet
-    ' day() = GetDays(days, targetTerm)
-    ' GetDays()
+    exportSheet.Cells(8, 3).Value = "日付⇒"
+    Call SetDate(exportSheet, settingSheet)
+
+    ' Positon, Member, Workの関数は共通化する（暫定実装）
+    ' Position
+    exportSheet.Cells(9, 1).Value = "役職"
+    Call SetPosition(exportSheet, settingSheet)
+
+    ' Member
+    exportSheet.Cells(9, 2).Value = "名前"
+    Call SetMember(exportSheet, settingSheet)
+
+    ' Work
+    exportSheet.Cells(9, 3).Value = "担当"
+    Call SetWork(exportSheet, settingSheet)
 
     ' UI
     ' TODO: A8-最終入力セルを取得して罫線を設定する
-    MonthSheet.Range("A8:B13").Borders.LineStyle = xlContinuous
+    exportSheet.Range("A8:S14").Borders.LineStyle = xlContinuous
 
 End Function
 
-Function GetBelongs(collections() As String , macro As Worksheet, col As String) As String()
-    ' macroシートのRow6以下の値が空白までループ
-    ' 空白までの数をカウント
-    ' collectionsの要素数をカウントにReDim
-    ' collectionsに役職の値を設定する
+' 日付出力
+' exportSheet:出力先、 settingSheet:取得先、
+Function SetDate(exportSheet As Worksheet, settingSheet As Worksheet)
 
-    GetPosition = collections
-End Function
+    Dim targetYear As String
+    Dim targetMonth As String
+    Dim targetTerm As String
+    Dim target As String
+    Dim lstDate
+    Dim day_num
+    targetYear = settingSheet.Range("F2").Value
+    targetMonth = settingSheet.Range("F3").Value
+    targetTerm = settingSheet.Range("F4").Value
+    target = STR(targetYear) + "/" + STR(targetMonth) + "/01"
+    lstDate = Format(DateSerial(Year(target), month(target) + 1, 0), "d")
 
-Function SetBelongs(collections() As String , MonthSheet As Worksheet, col As String)
-    ' MonthSheetに値を設定する
-    Exit Function
-End Function
-
-Function GetDays(days() As Integer, ByVal targetTerm As String) As Integer()
-    Dim d As Integer
-
+    Dim endRoop
     If targetTerm = "前半" Then
-        d = 1
-    Else If targetTerm = "後半" Then
-        d = 16
+        day_num = 1
+        endRoop = 15
+    Else
+        day_num = 16
+        endRoop = Val(lstDate) - day_num
     End If
 
-    For i = d To d + 14
-        days(i) = d
+    Dim targetWeek As String
+    Dim wk As String
+    For i = 4 To endRoop + 4
+        targetWeek = Weekday(STR(targetYear) + "/" + STR(targetMonth) + "/" + STR(i + day_num - 4))
+        Select Case targetWeek
+            Case 1
+                wk = "（日）"
+            Case 2
+                wk = "（月）"
+            Case 3
+                wk = "（火）"
+            Case 4
+                wk = "（水）"
+            Case 5
+                wk = "（木）"
+            Case 6
+                wk = "（金）"
+            Case 7
+                wk = "（土）"
+        End Select
+        exportSheet.Cells(8, i).Value = STR(i + day_num - 4) + "日"
+        exportSheet.Cells(9, i).Value = wk
     Next i
 
-    GetDays = days
+
 End Function
+
+' 役職出力
+' exportSheet:出力先、 settingSheet:取得先、
+Function SetPosition(exportSheet As Worksheet, settingSheet As Worksheet)
+    ' 最後の入力行を取得
+    ' 9行目～最終行の値を取得
+    ' 値を設定
+    Dim lstRow
+    lstRow = exportSheet.Cells(9, 1).End(xlDown).Row
+
+    exportSheet.Cells(10, 1).Value = settingSheet.Cells(7, 5).Value
+    exportSheet.Cells(11, 1).Value = settingSheet.Cells(8, 5).Value
+    exportSheet.Cells(12, 1).Value = settingSheet.Cells(9, 5).Value
+    exportSheet.Cells(13, 1).Value = settingSheet.Cells(10, 5).Value
+    exportSheet.Cells(14, 1).Value = settingSheet.Cells(11, 5).Value
+
+End Function
+
+' 名前出力
+' exportSheet:出力先、 settingSheet:取得先、
+Function SetMember(exportSheet As Worksheet, settingSheet As Worksheet)
+    ' 最後の入力行を取得
+    ' 9行目～最終行の値を取得
+    ' 値を設定
+    Dim lstRow
+    lstRow = exportSheet.Cells(9, 2).End(xlDown).Row
+
+    exportSheet.Cells(10, 2).Value = settingSheet.Cells(7, 6).Value
+    exportSheet.Cells(11, 2).Value = settingSheet.Cells(8, 6).Value
+    exportSheet.Cells(12, 2).Value = settingSheet.Cells(9, 6).Value
+    exportSheet.Cells(13, 2).Value = settingSheet.Cells(10, 6).Value
+    exportSheet.Cells(14, 2).Value = settingSheet.Cells(11, 6).Value
+
+End Function
+
+' 担当出力
+' exportSheet:出力先、 settingSheet:取得先、
+Function SetWork(exportSheet As Worksheet, settingSheet As Worksheet)
+    ' 最後の入力行を取得
+    ' 9行目～最終行の値を取得
+    ' 値を設定
+    Dim lstRow
+    lstRow = exportSheet.Cells(9, 2).End(xlDown).Row
+
+    exportSheet.Cells(10, 3).Value = settingSheet.Cells(7, 7).Value
+    exportSheet.Cells(11, 3).Value = settingSheet.Cells(8, 7).Value
+    exportSheet.Cells(12, 3).Value = settingSheet.Cells(9, 7).Value
+    exportSheet.Cells(13, 3).Value = settingSheet.Cells(10, 7).Value
+    exportSheet.Cells(14, 3).Value = settingSheet.Cells(11, 7).Value
+
+End Function
+
